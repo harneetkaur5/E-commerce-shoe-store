@@ -1,20 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { fetchShoes } from "./api";
+import CheckoutModal from "./CheckoutModal";
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
-const SHOES = [
-  { id:1,  name:"Air Max Pulse",        cat:"Running",    price:149, old:189, color:"Volt / Black",           hex:"#C8F000", badge:"NEW",     rating:4.8, reviews:2341, sizes:[7,7.5,8,8.5,9,9.5,10,10.5,11,12],          desc:"Designed for the streets, built for the track. The Air Max Pulse delivers responsive cushioning with an aggressive silhouette that turns heads.",                                                                                  tags:["Bestseller","Breathable"],       imgs:["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80","https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80","https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600&q=80"] },
-  { id:2,  name:"Jordan 1 Retro High",  cat:"Basketball", price:219, old:219, color:"Chicago Red / White",     hex:"#CE1141", badge:"ICONIC",  rating:4.9, reviews:5823, sizes:[7,7.5,8,8.5,9,9.5,10,10.5,11,12,13],       desc:"The shoe that started it all. The Jordan 1 Retro High Chicago is the definitive sneaker — bold, rebellious, and unmistakably legendary.",                                                                                          tags:["Legend","Limited"],              imgs:["https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=600&q=80","https://images.unsplash.com/photo-1552346154-21d32810aba3?w=600&q=80","https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80"] },
-  { id:3,  name:"Nike Pegasus 41",      cat:"Running",    price:129, old:129, color:"Ocean Blue / Silver",     hex:"#1E6FB5", badge:null,      rating:4.7, reviews:3102, sizes:[6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,12],    desc:"The everyday workhorse. The Pegasus 41 features React foam cushioning and a wider forefoot for a more natural, powerful stride.",                                                                                                   tags:["Daily Trainer","Cushioned"],     imgs:["https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=600&q=80","https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80","https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80"] },
-  { id:4,  name:"Air Force 1 '07",      cat:"Lifestyle",  price:109, old:109, color:"Triple White",            hex:"#EEEEEE", badge:"CLASSIC", rating:4.9, reviews:9811, sizes:[6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,12,13], desc:"40 years of clean. The Air Force 1 is a cultural cornerstone — timeless silhouette, legendary Air cushioning, clean forever.",                                                                                             tags:["Timeless","All-day"],            imgs:["https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=80","https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=600&q=80","https://images.unsplash.com/photo-1552346154-21d32810aba3?w=600&q=80"] },
-  { id:5,  name:"Zoom Vomero 5",        cat:"Running",    price:159, old:199, color:"Earth / Moss Green",      hex:"#6B7C3D", badge:"SALE",    rating:4.6, reviews:1204, sizes:[7,7.5,8,8.5,9,9.5,10,10.5,11],              desc:"Chunky runner energy meets 2000s nostalgia. The Vomero 5 is back and better — technical construction for the fashion-forward athlete.",                                                                                            tags:["Retro","Trending"],              imgs:["https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80","https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=600&q=80","https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=80"] },
-  { id:6,  name:"Dunk Low Panda",       cat:"Lifestyle",  price:109, old:109, color:"Black / White",           hex:"#111111", badge:"HOT",     rating:4.8, reviews:7432, sizes:[6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,12,13], desc:"The most-hyped Dunk ever. Panda colorway dominates the game — simple, clean, and impossible to find at retail.",                                                                                                         tags:["Hype","Streetwear"],             imgs:["https://images.unsplash.com/photo-1552346154-21d32810aba3?w=600&q=80","https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=80","https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=600&q=80"] },
-  { id:7,  name:"New Balance 990v6",    cat:"Running",    price:185, old:185, color:"Grey / Silver",           hex:"#9B9B9B", badge:"NEW",     rating:4.8, reviews:1876, sizes:[7,7.5,8,8.5,9,9.5,10,10.5,11,12,13],       desc:"Made in USA. The 990v6 is the pinnacle of New Balance engineering — premium suede and mesh upper with ENCAP midsole technology for all-day comfort.",                                                                              tags:["Made in USA","Premium"],         imgs:["https://images.unsplash.com/photo-1539185441755-769473a23570?w=600&q=80","https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80","https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=600&q=80"] },
-  { id:8,  name:"Adidas Ultraboost 24", cat:"Running",    price:189, old:220, color:"Core Black / White",      hex:"#1A1A1A", badge:"SALE",    rating:4.7, reviews:3421, sizes:[6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,12],      desc:"Powered by Boost technology, the Ultraboost 24 returns energy with every step. The Primeknit upper wraps your foot like a second skin.",                                                                                          tags:["Energy Return","Knit"],          imgs:["https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=600&q=80","https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=600&q=80","https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=80"] },
-  { id:9,  name:"Converse Chuck 70",    cat:"Lifestyle",  price:95,  old:95,  color:"Vintage Canvas / Egret",  hex:"#F5F0E8", badge:"CLASSIC", rating:4.6, reviews:6104, sizes:[5,5.5,6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,12,13], desc:"The Chuck 70 takes the iconic silhouette to the next level with premium canvas, a higher rubber foxing tape, and a cushioned footbed. Timeless by design.",                                                    tags:["Iconic","Unisex"],               imgs:["https://images.unsplash.com/photo-1463100099107-aa0980c362e6?w=600&q=80","https://images.unsplash.com/photo-1552346154-21d32810aba3?w=600&q=80","https://images.unsplash.com/photo-1600185365926-3a2ce3cdb9eb?w=600&q=80"] },
-  { id:10, name:"Yeezy Boost 350 V2",   cat:"Lifestyle",  price:229, old:229, color:"Zebra White / Black",     hex:"#E8E8E8", badge:"LIMITED", rating:4.9, reviews:8903, sizes:[7,7.5,8,8.5,9,9.5,10,10.5,11,12],          desc:"The 350 V2 Zebra remains one of the most coveted sneakers ever made — Primeknit upper, full-length Boost, unmistakable design.",                                                                                                    tags:["Limited","Hype"],                imgs:["https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=600&q=80","https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&q=80","https://images.unsplash.com/photo-1587563871167-1ee9c731aefb?w=600&q=80"] },
-  { id:11, name:"Asics Gel-Kayano 31",  cat:"Running",    price:159, old:159, color:"Deep Ocean / Teal",       hex:"#006699", badge:null,      rating:4.7, reviews:2214, sizes:[6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,12],    desc:"Built for long-distance runners who need maximum stability. The Gel-Kayano 31 combines FF BLAST+ cushioning with a supportive frame for mile after mile.",                                                                       tags:["Stability","Long Distance"],     imgs:["https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=600&q=80","https://images.unsplash.com/photo-1608231387042-66d1773070a5?w=600&q=80","https://images.unsplash.com/photo-1539185441755-769473a23570?w=600&q=80"] },
-  { id:12, name:"Puma Suede Classic",   cat:"Lifestyle",  price:79,  old:99,  color:"Burnt Red / White",       hex:"#C0392B", badge:"SALE",    rating:4.5, reviews:1589, sizes:[6,6.5,7,7.5,8,8.5,9,9.5,10,10.5,11,12],    desc:"A street legend since 1968. The Puma Suede Classic XXI honors the shoe that defined sneaker culture — rich suede upper, formstrip logo, clean and forever fresh.",                                                               tags:["Street Classic","Suede"],        imgs:["https://images.unsplash.com/photo-1600269452121-4f2416e55c28?w=600&q=80","https://images.unsplash.com/photo-1463100099107-aa0980c362e6?w=600&q=80","https://images.unsplash.com/photo-1549298916-b41d501d3772?w=600&q=80"] },
-];
+// Shoes are loaded from the backend database (see server/).
 
 const CATS = ["All", "Running", "Basketball", "Lifestyle"];
 
@@ -140,7 +129,6 @@ function ProductModal({ shoe, onClose, onAddToCart }) {
   const [imgIdx, setImgIdx] = useState(0);
   const [size, setSize] = useState(null);
 
-  useEffect(() => { setImgIdx(0); setSize(null); }, [shoe]);
   useEffect(() => {
     const esc = e => e.key === "Escape" && onClose();
     window.addEventListener("keydown", esc);
@@ -286,53 +274,7 @@ function CartDrawer({ open, cart, onClose, onRemove, onQty, onCheckout }) {
   );
 }
 
-// ─── CHECKOUT MODAL ──────────────────────────────────────────────────────────
-function CheckoutModal({ open, total, onClose, onPlace }) {
-  const [placed, setPlaced] = useState(false);
-  const [orderNum] = useState(() => "SOLE-" + (Math.floor(Math.random() * 90000) + 10000));
-
-  useEffect(() => { if (!open) setPlaced(false); }, [open]);
-
-  if (!open) return null;
-
-  const inp = { width:"100%", background:"#1a1a1a", border:"1px solid rgba(255,255,255,.08)", borderRadius:4, padding:"11px 13px", color:"#f0f0f0", fontSize:14, outline:"none", fontFamily:"inherit" };
-  const lbl = { display:"block", fontSize:10, letterSpacing:2, textTransform:"uppercase", fontWeight:700, color:"#555", marginBottom:5 };
-
-  return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.9)", zIndex:300, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
-      <div style={{ background:"#141414", border:"1px solid rgba(255,255,255,.08)", borderRadius:16, width:"100%", maxWidth:480, padding:36 }}>
-        {placed ? (
-          <div style={{ textAlign:"center" }}>
-            <div style={{ fontSize:60, marginBottom:16 }}>🎉</div>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:52, color:"#E8FF00", marginBottom:10 }}>ORDER PLACED!</div>
-            <p style={{ color:"#555", fontSize:14, lineHeight:1.6, marginBottom:20 }}>Your fresh kicks are on their way. You'll receive a confirmation email shortly.</p>
-            <div style={{ background:"#1a1a1a", borderRadius:8, padding:14, fontFamily:"'Bebas Neue',sans-serif", fontSize:22, color:"#f0f0f0", marginBottom:22 }}>Order #{orderNum}</div>
-            <button onClick={onClose} style={{ width:"100%", background:"#E8FF00", color:"#000", border:"none", borderRadius:4, padding:14, fontWeight:700, fontSize:14, letterSpacing:1, textTransform:"uppercase", cursor:"pointer" }}>Continue Shopping</button>
-          </div>
-        ) : (
-          <>
-            <div style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:38, color:"#f0f0f0", marginBottom:22 }}>Checkout</div>
-            <div style={{ marginBottom:14 }}><label style={lbl}>Full Name</label><input style={inp} placeholder="John Doe" /></div>
-            <div style={{ marginBottom:14 }}><label style={lbl}>Email</label><input style={inp} placeholder="john@example.com" type="email" /></div>
-            <div style={{ marginBottom:14 }}><label style={lbl}>Address</label><input style={inp} placeholder="123 Street, City" /></div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14 }}>
-              <div><label style={lbl}>Card Number</label><input style={inp} placeholder="4242 4242 4242 4242" /></div>
-              <div><label style={lbl}>CVV</label><input style={inp} placeholder="123" /></div>
-            </div>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:14, background:"#1a1a1a", borderRadius:8, margin:"20px 0" }}>
-              <span style={{ color:"#555", fontSize:13 }}>Order Total</span>
-              <span style={{ fontFamily:"'Bebas Neue',sans-serif", fontSize:26, color:"#E8FF00" }}>${total.toFixed(2)}</span>
-            </div>
-            <div style={{ display:"flex", gap:10 }}>
-              <button onClick={() => { setPlaced(true); onPlace(); }} style={{ flex:1, background:"#E8FF00", color:"#000", border:"none", borderRadius:4, padding:15, fontWeight:800, fontSize:15, letterSpacing:1, textTransform:"uppercase", cursor:"pointer" }}>Place Order</button>
-              <button onClick={onClose} style={{ background:"#1a1a1a", border:"1px solid rgba(255,255,255,.08)", borderRadius:4, width:50, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, color:"#555", cursor:"pointer" }}>✕</button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
+// Checkout modal lives in ./CheckoutModal.jsx
 
 // ─── MAIN APP ─────────────────────────────────────────────────────────────────
 export default function App() {
@@ -346,6 +288,17 @@ export default function App() {
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
   const toastRef = useRef(null);
+  const [shoes, setShoes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  // Load shoes from the API / database
+  useEffect(() => {
+    fetchShoes()
+      .then(setShoes)
+      .catch(() => setLoadError("Couldn't load shoes. Is the API server running?"))
+      .finally(() => setLoading(false));
+  }, []);
 
   // Lock scroll when modal/cart is open
   useEffect(() => {
@@ -379,7 +332,7 @@ export default function App() {
   const toggleWish = id => setWishlist(prev => prev.includes(id) ? prev.filter(w => w !== id) : [...prev, id]);
 
   // Filtered + sorted shoes
-  const shown = SHOES
+  const shown = shoes
     .filter(s => (filter === "All" || s.cat === filter) && (s.name.toLowerCase().includes(search.toLowerCase()) || s.cat.toLowerCase().includes(search.toLowerCase())))
     .sort((a, b) => sort === "price-asc" ? a.price - b.price : sort === "price-desc" ? b.price - a.price : sort === "rating" ? b.rating - a.rating : 0);
 
@@ -495,7 +448,13 @@ export default function App() {
             <ShoeCard key={shoe.id} shoe={shoe} onOpen={setActiveShoe} onWish={toggleWish} wished={wishlist.includes(shoe.id)} />
           ))}
         </div>
-        {shown.length === 0 && (
+        {loading && (
+          <div style={{ textAlign:"center", padding:"60px 0", color:S.muted }}>Loading shoes…</div>
+        )}
+        {loadError && (
+          <div style={{ textAlign:"center", padding:"60px 0", color:"#FF3D3D" }}>{loadError}</div>
+        )}
+        {!loading && !loadError && shown.length === 0 && (
           <div style={{ textAlign:"center", padding:"60px 0", color:S.muted }}>No shoes found for "{search}"</div>
         )}
       </section>
@@ -521,9 +480,9 @@ export default function App() {
       </div>
 
       {/* ── MODALS & OVERLAYS ── */}
-      <ProductModal shoe={activeShoe} onClose={() => setActiveShoe(null)} onAddToCart={addToCart} />
+      <ProductModal key={activeShoe?.id} shoe={activeShoe} onClose={() => setActiveShoe(null)} onAddToCart={addToCart} />
       <CartDrawer open={cartOpen} cart={cart} onClose={() => setCartOpen(false)} onRemove={removeFromCart} onQty={changeQty} onCheckout={() => { setCartOpen(false); setCheckoutOpen(true); }} />
-      <CheckoutModal open={checkoutOpen} total={cartTotal} onClose={() => setCheckoutOpen(false)} onPlace={() => setCart([])} />
+      <CheckoutModal open={checkoutOpen} cart={cart} total={cartTotal} onClose={() => setCheckoutOpen(false)} onPlace={() => setCart([])} />
       <Toast toast={toast} />
     </>
   );
